@@ -1,0 +1,3 @@
+make: Entering directory 'c:/Users/Benlitzie/PythonProjects/MIE424/BA-Trees/src/born_again_dp'
+g++ -O3  -o ./bornAgain ./main.o ./BornAgainDecisionTree.o ./FSpace.o ./RandomForest.o 
+make: Leaving directory 'c:/Users/Benlitzie/PythonProjects/MIE424/BA-Trees/src/born_again_dp'
