@@ -30,8 +30,11 @@ dataset_names = [
         "Breast-Cancer-Wisconsin",
         "COMPAS-ProPublica",
         "FICO",
+        "Heart",
         "HTRU2",
+        "Kaggle-Diabetes",
         "Pima-Diabetes",
+        "CDC-Diabetes",
         "Seeds"
     ]
 

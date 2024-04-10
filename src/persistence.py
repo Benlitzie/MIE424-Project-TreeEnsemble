@@ -24,11 +24,13 @@ import numpy as np
 import sklearn.tree as tree 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+import logging
 
 #################################################################################
 # importing a txt file
 #################################################################################
 def importTreeCollection(datasetName, silent=False):
+    logging.debug("Starting to import tree collection from file: %s", datasetName)
     treeIndex = -1
     new_n_nodes = []
     new_children_left = []
@@ -68,9 +70,14 @@ def importTreeCollection(datasetName, silent=False):
                     print("Evaluating new tree")
                 # increase the tree index
                 treeIndex = treeIndex + 1
+                # In importTreeCollection
                 if len(data[index+1]) == 1:
                     data[index+1] = data[index+1][0].split(':')
-                new_n_nodes.append(int(data[index+1][1]))
+                if data[index+1][1].isdigit():  # Ensure it is a digit before converting to int
+                    new_n_nodes.append(int(data[index+1][1]))
+                else:
+                    raise ValueError(f"Expected a digit for number of nodes, but got: {data[index+1][1]}")
+
                 # add containers for the new tree
                 new_children_left.append([])
                 new_children_right.append([])
@@ -93,6 +100,8 @@ def importTreeCollection(datasetName, silent=False):
                     new_is_leaves[treeIndex].append(True)
                 else:
                     new_is_leaves[treeIndex].append(False)
+
+    logging.info("Successfully imported tree collection from: %s", datasetName)
     return new_dataset, new_ensemble, new_numOfTrees, new_numOfFeatures, new_numOfClasses, new_maxTreeDepth, new_n_nodes, new_children_left, new_children_right, new_feature, new_threshold, new_node_depth, new_is_leaves, new_nodeValues, new_majorityClass
 ################################################################################
 
@@ -310,6 +319,17 @@ def classifier_from_file(fn, X, y, pruning=False, compute_score=False, num_trees
     
     trees = []
     for i in range(numOfTrees):
+        if n_nodes[i] is None:
+            raise ValueError(f"n_nodes[{i}] is None")
+        if not isinstance(n_nodes[i], int):
+            raise TypeError(f"n_nodes[{i}] must be an integer, got {type(n_nodes[i])} instead")
+
+        # Ensure that arrays have the correct length matching n_nodes[i]
+        if len(children_left[i]) != n_nodes[i] or len(children_right[i]) != n_nodes[i]:
+            raise ValueError(f"Length of children arrays for tree {i} does not match n_nodes[{i}]")
+        if len(features[i]) != n_nodes[i] or len(thresholds[i]) != n_nodes[i]:
+            raise ValueError(f"Length of features/thresholds arrays for tree {i} does not match n_nodes[{i}]")
+
         t = build_tree(X, y, n_features, np.array(n_classes, dtype=np.intp), n_outputs,
                        maxTreeDepth, n_nodes[i], children_left[i],
                        children_right[i], features[i], thresholds[i],
